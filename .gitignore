@@ -1,0 +1,21 @@
+# 环境与密钥
+.env
+.env.local
+*.pem
+
+# 各 skill 的临时输出（避免误提交）
+**/temp/
+**/temp/*.json
+**/temp/*.txt
+**/temp/*.md
+
+# Node
+node_modules/
+npm-debug.log*
+
+# 系统与编辑器
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/

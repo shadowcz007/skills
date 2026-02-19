@@ -1,9 +1,9 @@
 ---
-name: mixlab-solo-scope
-description: 从 Solo Scope RSS（https://www.mixdao.world/feed）拉取条目，按主题整理成 3～6 类，每类生成 140 字核心价值摘要，并附每条原标题与 URL 输出简报。由 Agent 自行完成拉取、整理、写简报。触发示例：「做 Solo Scope」「mixlab Solo Scope」「整理 mixdao feed」「RSS 分类简报」。
+name: solo-scope
+description: 从 Solo Scope RSS（https://www.mixdao.world/feed）拉取条目，按主题整理成 3～6 类，每类生成 140 字核心价值摘要，并附每条原标题与 URL 输出简报。由 Agent 自行完成拉取、整理、写简报。触发示例：「做 Solo Scope」「 olo Scope」「整理 mixdao feed」「RSS 分类简报」。
 ---
 
-# MIXLAB Solo Scope（RSS 简报）
+# Solo Scope（RSS 简报）
 
 由 Agent 拉取 Solo Scope 实时动态 RSS，归纳成若干类别，每类一段 140 字摘要（核心价值），并保留每条的原标题与原文链接，直接输出 Markdown 简报。
 

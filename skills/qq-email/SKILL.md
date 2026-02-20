@@ -28,9 +28,10 @@ description: 面向 QQ 邮箱的 IMAP 收邮件、SMTP 发邮件；账号与授�
 ## 脚本
 
 | 脚本 | 作用 |
-|------|------|
+| --- | --- |
 | `scripts/send.js` | 从环境变量读凭证，用 nodemailer 连接 QQ 邮箱 SMTP 发信；支持收件人、主题、正文（CLI 参数）。 |
 | `scripts/receive.js` | 从环境变量读凭证，用 imap + mailparser 连接 QQ 邮箱 IMAP 收信；支持「最近 N 条」或「最近 N 天」，输出主题、发件人、日期、正文摘要。 |
+| `scripts/get-body.js` | 按序号获取指定邮件的**完整正文**（纯文本，无摘要截断）；序号与收信列表一致，1 表示最新一封。支持 `--index`、`--limit`、`--days`。 |
 
 ## 发信流程
 
@@ -62,6 +63,29 @@ node scripts/receive.js --days 7
 ```
 
 输出：每封邮件的主题、发件人、日期、正文摘要（前约 200 字），便于查看。
+
+## 获取邮件正文
+
+需要某封邮件的**完整正文**时，使用 `get-body.js`。序号与 `receive.js` 列表一致：**1 = 最新一封**，2 = 倒数第二封，以此类推。
+
+```bash
+# 获取最新一封的完整正文（默认）
+node scripts/get-body.js
+
+# 获取第 N 封的完整正文（N 与上面收信列表中的 --- 1 --- / --- 2 --- 对应）
+node scripts/get-body.js --index 3
+# 或简写
+node scripts/get-body.js -n 3
+
+# 在「最近 7 天」的邮件中取第 2 封
+node scripts/get-body.js --days 7 --index 2
+
+# 在「最近 30 条」中取第 5 封
+node scripts/get-body.js --limit 30 -n 5
+```
+
+- **输出**：完整正文输出到 stdout（纯文本；若原邮件仅有 HTML，会做简单去标签后输出）。可重定向到文件或管道给其它命令。
+- **环境变量**：与收信相同，需 `QQ_EMAIL_ACCOUNT`、`QQ_EMAIL_AUTH_CODE`。
 
 ## 可选能力（与「收取选项」对应）
 

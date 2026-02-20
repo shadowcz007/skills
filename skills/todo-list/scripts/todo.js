@@ -20,6 +20,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, '..', 'temp');
 const TODO_FILE = path.join(DATA_DIR, 'todo-list.md');
 
+/** 表格列内存储时把 | 换成全角 ｜，避免破坏列解析 */
+function escapePipe(s) {
+  return String(s ?? '').replace(/\|/g, '｜');
+}
+function unescapePipe(s) {
+  return String(s ?? '').replace(/｜/g, '|');
+}
+
 /**
  * 生成唯一 ID
  */
@@ -60,8 +68,8 @@ function readTodos() {
         items.push({
           id: parts[0],
           standardTime: parts[1],
-          content: parts[2],
-          progress: parts[3],
+          content: unescapePipe(parts[2]),
+          progress: unescapePipe(parts[3]),
           timestamp: parts[4] || '',
         });
       }
@@ -75,12 +83,15 @@ function readTodos() {
  * 保存待办事项
  */
 function saveTodos(items) {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
   let md = '## Todo List\n\n';
   md += '| ID | 标准时间 (ISO 8601) | 事项内容 | 进度 | 创建/更新时间戳 |\n';
   md += '|----|---------------------|----------|------|----------------|\n';
   
   for (const item of items) {
-    md += `| ${item.id} | ${item.standardTime} | ${item.content} | ${item.progress} | ${item.timestamp} |\n`;
+    md += `| ${item.id} | ${item.standardTime} | ${escapePipe(item.content)} | ${escapePipe(item.progress)} | ${item.timestamp} |\n`;
   }
   
   fs.writeFileSync(TODO_FILE, md, 'utf-8');
@@ -116,24 +127,28 @@ function findTodos(items, query) {
  */
 function main() {
   const args = process.argv.slice(2);
-  const command = args[0] || 'list';
+  const useJson = args.includes('--json');
+  const command = (args[0] === '--json' ? 'list' : (args[0] || 'list'));
   
   console.log(`[TIMESTAMP] ${Date.now()}`);
-  console.log(`[COMMAND] ${command}`);
+  console.log(`[COMMAND] ${command}${useJson ? ' --json' : ''}`);
   
   const items = readTodos();
   
   if (command === 'list') {
-    // 列出所有待办
-    console.log(`[RESULT]`);
-    console.log(`count: ${items.length}`);
-    console.log(`items:`);
-    
-    if (items.length === 0) {
-      console.log(`  (空)`);
+    if (useJson) {
+      console.log(`[RESULT]`);
+      console.log(JSON.stringify({ count: items.length, items }));
     } else {
-      for (const item of items) {
-        console.log(`  - ${item.id}: ${item.content} [${item.progress}] @ ${item.standardTime}`);
+      console.log(`[RESULT]`);
+      console.log(`count: ${items.length}`);
+      console.log(`items:`);
+      if (items.length === 0) {
+        console.log(`  (空)`);
+      } else {
+        for (const item of items) {
+          console.log(`  - ${item.id}: ${item.content} [${item.progress}] @ ${item.standardTime}`);
+        }
       }
     }
   } else if (command === 'add') {
@@ -250,7 +265,7 @@ function main() {
     console.log(`item: ${deleted.content}`);
   } else {
     console.log(`Usage:`);
-    console.log(`  node scripts/todo.js list                      # 列出所有待办`);
+    console.log(`  node scripts/todo.js list [--json]             # 列出待办，--json 输出 JSON`);
     console.log(`  node scripts/todo.js add "ISO时间" "内容"      # 添加待办`);
     console.log(`  node scripts/todo.js update "ID" "进度"        # 更新进度`);
     console.log(`  node scripts/todo.js done "ID或关键词"         # 标记完成`);

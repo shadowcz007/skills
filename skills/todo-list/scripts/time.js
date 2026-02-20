@@ -36,6 +36,28 @@ function parseNaturalTime(input, referenceTime = null) {
   let result = now.clone();
   let foundDate = false;
   
+  // 相对时间：半小时后、N分钟后、N小时后、N天后
+  const halfHour = text.match(/半\s*小时\s*后/);
+  const minLater = text.match(/(\d+)\s*分\s*钟?\s*后/);
+  const hourLater = text.match(/(\d+)\s*小时\s*后/);
+  const dayLater = text.match(/(\d+)\s*天\s*后/);
+  if (halfHour) {
+    result = result.add(30, 'minute');
+    return result;
+  }
+  if (minLater) {
+    result = result.add(parseInt(minLater[1], 10), 'minute');
+    return result;
+  }
+  if (hourLater) {
+    result = result.add(parseInt(hourLater[1], 10), 'hour');
+    return result;
+  }
+  if (dayLater) {
+    result = result.add(parseInt(dayLater[1], 10), 'day');
+    return result;
+  }
+  
   // 检查周几
   const weekMatch = text.match(/周[一二三四五六日天]/);
   const isNextWeek = text.includes('下周') || text.includes('下下');
@@ -105,8 +127,9 @@ function main() {
     console.log(`unix: ${now.unix()}`);
     console.log(`formatted: ${now.format('YYYY-MM-DD HH:mm:ss')}`);
   } else if (command === 'parse') {
-    const timeInput = args.slice(1).join(' ') || '';
-    const referenceTime = args.find(a => a.startsWith('--ref='))?.replace('--ref=', '') || null;
+    const refArg = args.find(a => a.startsWith('--ref='));
+    const referenceTime = refArg ? refArg.replace('--ref=', '') : null;
+    const timeInput = args.slice(1).filter(a => !a.startsWith('--ref=')).join(' ').trim() || '';
     
     console.log(`[INPUT] ${timeInput}`);
     console.log(`[REFERENCE] ${referenceTime || 'now'}`);
@@ -128,7 +151,7 @@ function main() {
   } else {
     console.log(`Usage:`);
     console.log(`  node scripts/time.js now`);
-    console.log(`  node scripts/time.js parse "明天下午3点"`);
+    console.log(`  node scripts/time.js parse "明天下午3点" [--ref=ISO时间]`);
     process.exit(1);
   }
 }

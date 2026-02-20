@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
+  "scripts": {
+    "postinstall": "playwright install chromium"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
-    "jsonrepair": "^3.13.2"
+    "jsonrepair": "^3.13.2",
+    "playwright": "^1.49.0"
   }
 }

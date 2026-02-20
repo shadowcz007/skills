@@ -55,7 +55,7 @@ function isValidContent(text) {
 }
 
 // 使用 curl 获取页面
-function fetchUrl(url) {
+function fetchWithCurl(url) {
   return new Promise((resolve, reject) => {
     const curl = spawn('curl', ['-sL', '--max-time', '30', url]);
     let data = '';
@@ -74,6 +74,36 @@ function fetchUrl(url) {
 
     curl.on('error', reject);
   });
+}
+
+// 使用 Playwright 无头浏览器获取页面（curl 失败时的兜底）
+async function fetchWithPlaywright(url) {
+  const { chromium } = await import('playwright');
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+  try {
+    const page = await browser.newPage();
+    await page.goto(url, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000,
+    });
+    const html = await page.content();
+    return html;
+  } finally {
+    await browser.close();
+  }
+}
+
+// 先 curl，失败则 Playwright
+async function fetchUrl(url) {
+  try {
+    return await fetchWithCurl(url);
+  } catch (err) {
+    console.log(`  [CURL 失败] ${err.message}，尝试 Playwright...`);
+    return await fetchWithPlaywright(url);
+  }
 }
 
 async function main() {

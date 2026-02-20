@@ -35,7 +35,7 @@ node scripts/01-fetch-no-content.js
 node scripts/02-fetch-content.js temp/fill-content-2026-02-17.json
 ```
 
-- 自动抓取每个 URL 的内容
+- 自动抓取每个 URL 的内容（先 curl，失败时用 Playwright 无头浏览器兜底）
 - 保存到 `temp/{cachedStoryId}.txt`
 - 过滤无效内容（404、登录页等）
 - 可中途停止，下次运行会跳过已存在的文件

@@ -117,6 +117,12 @@ async function main() {
       console.log('暂无邮件');
       return;
     }
+    // 按日期倒序，1 = 最新一封，与 get-body.js 序号一致
+    emails.sort((a, b) => {
+      const da = a.date ? new Date(a.date).getTime() : 0;
+      const db = b.date ? new Date(b.date).getTime() : 0;
+      return db - da;
+    });
     emails.forEach((e, i) => {
       const from = e.from?.text || e.from?.value?.[0]?.address || '';
       const date = e.date ? new Date(e.date).toLocaleString() : '';

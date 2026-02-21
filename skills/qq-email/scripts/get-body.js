@@ -20,14 +20,15 @@ const imapConfig = {
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  let messageId = null;
+  let uid = null;
   for (let i = 0; i < args.length; i++) {
-    if ((args[i] === '--message-id' || args[i] === '-m') && args[i + 1]) {
-      messageId = args[i + 1].trim();
+    if (args[i] === '--uid' && args[i + 1]) {
+      const n = parseInt(args[i + 1].trim(), 10);
+      if (!Number.isNaN(n) && n > 0) uid = n;
       i++;
     }
   }
-  return { messageId };
+  return { uid };
 }
 
 function openInbox(imap) {
@@ -63,8 +64,8 @@ function getBodyText(parsed) {
   return '';
 }
 
-/** 按 Message-ID 在 INBOX 中查找并取回一封邮件的解析结果 */
-async function fetchByMessageId(messageId) {
+/** 按 UID 在 INBOX 中取回一封邮件的解析结果 */
+async function fetchByUid(uid) {
   const imap = new Imap(imapConfig);
 
   return new Promise((resolve, reject) => {
@@ -75,31 +76,21 @@ async function fetchByMessageId(messageId) {
     imap.once('ready', () => {
       openInbox(imap)
         .then(() => {
-          imap.search([['HEADER', 'MESSAGE-ID', messageId]], (err, uids) => {
-            if (err) {
-              imap.end();
-              return reject(err);
-            }
-            if (uids.length === 0) {
-              imap.end();
-              return resolve(null);
-            }
-            const fetch = imap.fetch(uids, { bodies: '' });
-            fetch.on('message', (msg) => {
-              msg.on('body', (stream) => {
-                simpleParser(stream, (parseErr, result) => {
-                  if (!parseErr) parsed = result;
-                  parseDone();
-                });
+          const fetch = imap.fetch(uid, { bodies: '' });
+          fetch.on('message', (msg) => {
+            msg.on('body', (stream) => {
+              simpleParser(stream, (parseErr, result) => {
+                if (!parseErr) parsed = result;
+                parseDone();
               });
             });
-            fetch.once('error', (e) => {
-              imap.end();
-              reject(e);
-            });
-            fetch.once('end', () => {
-              parsePromise.then(() => imap.end());
-            });
+          });
+          fetch.once('error', (e) => {
+            imap.end();
+            reject(e);
+          });
+          fetch.once('end', () => {
+            parsePromise.then(() => imap.end());
           });
         })
         .catch((e) => {
@@ -115,17 +106,17 @@ async function fetchByMessageId(messageId) {
 }
 
 async function main() {
-  const { messageId } = parseArgs();
+  const { uid } = parseArgs();
 
-  if (!messageId) {
-    console.error('请提供 --message-id（或 -m），值为收信列表中的 Message-ID');
+  if (!uid) {
+    console.error('请提供 --uid，值为收信列表中的 UID');
     process.exit(1);
   }
 
   try {
-    const email = await fetchByMessageId(messageId);
+    const email = await fetchByUid(uid);
     if (!email) {
-      console.error('未找到该 Message-ID 的邮件');
+      console.error('未找到该 UID 的邮件');
       process.exit(1);
     }
     const body = getBodyText(email);

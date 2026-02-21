@@ -30,8 +30,8 @@ description: 面向 QQ 邮箱的 IMAP 收邮件、SMTP 发邮件；账号与授�
 | 脚本 | 作用 |
 | --- | --- |
 | `scripts/send.js` | 从环境变量读凭证，用 nodemailer 连接 QQ 邮箱 SMTP 发信；支持收件人、主题、正文（CLI 参数）。 |
-| `scripts/receive.js` | 从环境变量读凭证，用 imap + mailparser 连接 QQ 邮箱 IMAP 收信；支持「最近 N 条」或「最近 N 天」，输出主题、发件人、日期、**Message-ID**、正文摘要。 |
-| `scripts/get-body.js` | 按 **Message-ID** 获取指定邮件的**完整正文**（纯文本，无摘要截断）。必须传入 `--message-id`/`-m`（值为收信列表中的 Message-ID）。 |
+| `scripts/receive.js` | 从环境变量读凭证，用 imap + mailparser 连接 QQ 邮箱 IMAP 收信；支持「最近 N 条」或「最近 N 天」，输出主题、发件人、日期、**UID**、正文摘要。 |
+| `scripts/get-body.js` | 按 **UID** 获取指定邮件的**完整正文**（纯文本，无摘要截断）。必须传入 `--uid`（值为收信列表中的 UID）。 |
 
 ## 发信流程
 
@@ -62,19 +62,17 @@ node scripts/receive.js --limit 20
 node scripts/receive.js --days 7
 ```
 
-输出：每封邮件的主题、发件人、日期、**Message-ID**（唯一标识，可用于按 ID 取正文）、正文摘要（前约 200 字），便于查看。
+输出：每封邮件的主题、发件人、日期、**UID**（收件箱内唯一标识，用于按 UID 取正文）、正文摘要（前约 200 字），便于查看。
 
 ## 获取邮件正文
 
-需要某封邮件的**完整正文**时，使用 `get-body.js`，传入收信列表中该邮件的 **Message-ID**：
+需要某封邮件的**完整正文**时，使用 `get-body.js`，传入收信列表中该邮件的 **UID**：
 
 ```bash
-node scripts/get-body.js --message-id "<abc123@mail.qq.com>"
-# 或简写
-node scripts/get-body.js -m "<abc123@mail.qq.com>"
+node scripts/get-body.js --uid 12345
 ```
 
-未传 `--message-id` 时会提示并退出。
+未传 `--uid` 时会提示并退出。UID 与收件箱绑定，邮件移动或删除后可能失效。
 
 - **输出**：完整正文输出到 stdout（纯文本；若原邮件仅有 HTML，会做简单去标签后输出）。可重定向到文件或管道给其它命令。
 - **环境变量**：与收信相同，需 `QQ_EMAIL_ACCOUNT`、`QQ_EMAIL_AUTH_CODE`。

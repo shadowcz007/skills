@@ -20,22 +20,14 @@ const imapConfig = {
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  let limit = 10;
-  let days = null;
-  let index = 1;
+  let messageId = null;
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--limit' && args[i + 1]) {
-      limit = Math.max(1, parseInt(args[i + 1], 10) || 10);
-      i++;
-    } else if (args[i] === '--days' && args[i + 1]) {
-      days = Math.max(1, parseInt(args[i + 1], 10) || 7);
-      i++;
-    } else if ((args[i] === '--index' || args[i] === '-n') && args[i + 1]) {
-      index = Math.max(1, parseInt(args[i + 1], 10) || 1);
+    if ((args[i] === '--message-id' || args[i] === '-m') && args[i + 1]) {
+      messageId = args[i + 1].trim();
       i++;
     }
   }
-  return { limit, days, index };
+  return { messageId };
 }
 
 function openInbox(imap) {
@@ -71,36 +63,33 @@ function getBodyText(parsed) {
   return '';
 }
 
-async function fetchEmails(limit, sinceDate) {
+/** 按 Message-ID 在 INBOX 中查找并取回一封邮件的解析结果 */
+async function fetchByMessageId(messageId) {
   const imap = new Imap(imapConfig);
 
   return new Promise((resolve, reject) => {
-    const emails = [];
+    let parsed = null;
+    let parseDone = null;
+    const parsePromise = new Promise((r) => { parseDone = r; });
 
     imap.once('ready', () => {
       openInbox(imap)
         .then(() => {
-          const searchCriteria = sinceDate ? [['SINCE', sinceDate]] : ['ALL'];
-          imap.search(searchCriteria, (err, uids) => {
+          imap.search([['HEADER', 'MESSAGE-ID', messageId]], (err, uids) => {
             if (err) {
               imap.end();
               return reject(err);
             }
             if (uids.length === 0) {
               imap.end();
-              return resolve(emails);
+              return resolve(null);
             }
-            const slice = uids.slice(-limit);
-            const fetch = imap.fetch(slice, { bodies: '' });
-            const parsePromises = [];
-
+            const fetch = imap.fetch(uids, { bodies: '' });
             fetch.on('message', (msg) => {
-              let resolveP;
-              parsePromises.push(new Promise((r) => { resolveP = r; }));
               msg.on('body', (stream) => {
-                simpleParser(stream, (parseErr, parsed) => {
-                  if (!parseErr) emails.push(parsed);
-                  resolveP();
+                simpleParser(stream, (parseErr, result) => {
+                  if (!parseErr) parsed = result;
+                  parseDone();
                 });
               });
             });
@@ -109,7 +98,7 @@ async function fetchEmails(limit, sinceDate) {
               reject(e);
             });
             fetch.once('end', () => {
-              Promise.all(parsePromises).then(() => imap.end());
+              parsePromise.then(() => imap.end());
             });
           });
         })
@@ -120,33 +109,25 @@ async function fetchEmails(limit, sinceDate) {
     });
 
     imap.once('error', reject);
-    imap.once('end', () => resolve(emails));
+    imap.once('end', () => resolve(parsed));
     imap.connect();
   });
 }
 
 async function main() {
-  const { limit, days, index } = parseArgs();
-  let sinceDate = null;
-  if (days) {
-    sinceDate = new Date();
-    sinceDate.setDate(sinceDate.getDate() - days);
+  const { messageId } = parseArgs();
+
+  if (!messageId) {
+    console.error('请提供 --message-id（或 -m），值为收信列表中的 Message-ID');
+    process.exit(1);
   }
 
   try {
-    const emails = await fetchEmails(limit, sinceDate);
-    if (emails.length === 0) {
-      console.error('暂无邮件');
+    const email = await fetchByMessageId(messageId);
+    if (!email) {
+      console.error('未找到该 Message-ID 的邮件');
       process.exit(1);
     }
-    // 按日期倒序，1 = 最新一封
-    emails.sort((a, b) => {
-      const da = a.date ? new Date(a.date).getTime() : 0;
-      const db = b.date ? new Date(b.date).getTime() : 0;
-      return db - da;
-    });
-    const oneBased = Math.max(1, Math.min(index, emails.length));
-    const email = emails[oneBased - 1];
     const body = getBodyText(email);
     if (!body) {
       console.error('该邮件无正文内容');

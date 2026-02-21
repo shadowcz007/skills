@@ -131,6 +131,7 @@ async function main() {
       console.log('主题:', e.subject || '(无主题)');
       console.log('发件人:', from);
       console.log('日期:', date);
+      console.log('Message-ID:', e.messageId || '(无)');
       console.log('摘要:', preview);
       console.log('');
     });

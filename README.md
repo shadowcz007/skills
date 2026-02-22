@@ -39,8 +39,11 @@ skills/
     │       └── get-body.js
     ├── techno-humanist-prophet/  # 简报 + 用户记忆 → KK + Jobs 双视角推文
     │   └── SKILL.md
-    └── insight-from-chat/    # 从聊天/用户反馈挖掘洞察（结构化 JSON）
-        └── SKILL.md
+    ├── insight-from-chat/    # 从聊天/用户反馈挖掘洞察（结构化 JSON）
+    │   └── SKILL.md
+    └── minimax-search-vlm/   # MiniMax Coding Plan：网络搜索 + 图像理解（curl）
+        ├── SKILL.md
+        └── reference.md
 ```
 
 ## 技能一览
@@ -54,6 +57,7 @@ skills/
 | **qq-email** | QQ 邮箱 IMAP 收信、SMTP 发信；支持按条数/天数收信、按序号取完整正文 | 「发 QQ 邮件」「收邮件」「查邮件」「代发邮件」 | `QQ_EMAIL_ACCOUNT`、`QQ_EMAIL_AUTH_CODE` |
 | **techno-humanist-prophet** | 从简报 + 用户记忆挑选素材，用乔布斯与凯文·凯利双视角写 120～150 字科技人文推文 | 「用科技人文主义视角解读」「KK + Jobs 风格推文」 | 无（需传入简报与记忆） |
 | **insight-from-chat** | 从聊天/用户反馈中由模型归纳类别，产出情绪倾向、需求痛点、业务机会的结构化 JSON | 「从聊天挖洞察」「用户反馈分析」「痛点挖掘」「需求洞察」 | 无（Agent 传上下文给 LLM） |
+| **minimax-search-vlm** | MiniMax Coding Plan API：网络搜索（web_search）与图像理解（understand_image），支持 URL 或 Base64 图片 | 「MiniMax 搜索」「图像理解」「web search」「描述这张图」 | `MINIMAX_CP_API_KEY`；可选 `MINIMAX_CP_BASE_URL`（默认国内） |
 
 各技能详细说明、步骤与命令见各自目录下的 **SKILL.md**。
 
@@ -64,6 +68,8 @@ skills/
   - `MIXDAO_API_KEY`：mixdao API Bearer token（fill-content、daily-briefing）
   - `ANTHROPIC_API_KEY`：MiniMax API Key（daily-briefing 的 02-briefing、fill-content 的 03-update）
   - `ANTHROPIC_BASE_URL`：可选，默认 `https://api.minimaxi.com/anthropic`（daily-briefing）
+  - `MINIMAX_CP_API_KEY`：MiniMax Coding Plan API Key（minimax-search-vlm，一般为 sk-cp- 开头）
+  - `MINIMAX_CP_BASE_URL`：可选，MiniMax Coding Plan Base URL（minimax-search-vlm），未设置时默认国内 `https://api.minimaxi.com`，国际可用 `https://api.minimax.io`
   - `QQ_EMAIL_ACCOUNT`、`QQ_EMAIL_AUTH_CODE`：QQ 邮箱账号与授权码（qq-email）
 
 ## 如何使用
@@ -78,6 +84,7 @@ skills/
 - **daily-briefing**：在 `skills/daily-briefing/` 下执行 `npm install`，先运行 `01-fetch.js`，再将输出的 temp 文件路径传给 `02-briefing.js`。
 - **todo-list**：在 `skills/todo-list/` 下执行 `npm install`，使用 `node scripts/time.js` 解析时间、`node scripts/todo.js add|list|update|done|delete` 管理待办。
 - **qq-email**：在 `skills/qq-email/` 下执行 `npm install`，使用 `scripts/send.js` 发信、`receive.js` 收信、`get-body.js` 取单封正文。
+- **minimax-search-vlm**：按 `skills/minimax-search-vlm/SKILL.md` 使用 curl 调用搜索（`/v1/coding_plan/search`）或图像理解（`/v1/coding_plan/vlm`），需先设置 `MINIMAX_CP_API_KEY`。
 
 具体命令与参数见各技能 **SKILL.md**。
 

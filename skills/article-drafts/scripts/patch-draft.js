@@ -97,7 +97,7 @@ function patchDraft(body) {
             },
         };
         const req = https.request(opts, (res) => {
-            res.setTimeout(15000, () => {
+            res.setTimeout(60000, () => {
                 req.destroy();
                 reject(new Error('PATCH 请求超时'));
             });
@@ -117,6 +117,7 @@ function patchDraft(body) {
             });
         });
         req.on('error', reject);
+        req.setTimeout(60000);
         req.write(payload);
         req.end();
     });

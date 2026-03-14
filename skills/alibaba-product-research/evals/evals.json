@@ -1,0 +1,23 @@
+{
+  "skill_name": "alibaba-product-research",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "调研蓝牙耳机市场",
+      "expected_output": "包含产品分类、价格区间、供应商信息、平台服务特点的结构化报告",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "alibaba 搜索电动工具",
+      "expected_output": "包含热门品类、产品价格、供应商分析的报告",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "市场调研户外帐篷",
+      "expected_output": "包含产品分类、价格区间、供应商信息、市场洞察的报告",
+      "files": []
+    }
+  ]
+}

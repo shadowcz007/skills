@@ -19,3 +19,4 @@ npm-debug.log*
 *.swo
 .idea/
 .vscode/
+/.playwright-mcp

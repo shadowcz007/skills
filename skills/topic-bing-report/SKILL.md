@@ -1,13 +1,13 @@
 ---
 name: topic-bing-report
-description: 从 solo-topics 获取话题，进行 Bing 搜索（国际来源优先）并获取全文，撰写汇总报告，投稿到话题。触发词：「制作专题报告」。搜索阶段调用 bing-search skill；详情页用 Playwright MCP；脚本路径以各 skill 目录为基准。详细域名、查询示例、Playwright 脚本、报告模板与排障见 references/details.md。
+description: 从 solo-topics 获取话题，进行 Bing 搜索（国际来源优先）并获取全文，撰写汇总报告，投稿到话题。触发词：「制作专题报告」。搜索阶段调用 bing-search skill；详情页用 Playwright MCP；脚本路径以各 skill 目录为基准。需区分检索日与原文日期；默认材料时效为检索日前 7 天内（偏最新），详见 references/details.md。
 ---
 
 # Topic Bing Report
 
 从 solo-topics 获取话题关键词，调用 bing-search 执行搜索（**国际来源优先**），用 Playwright MCP 获取详情页全文，整合信息撰写汇总智库报告，并投稿到对应话题。
 
-**详细参考**（按需读取，与本 `SKILL.md` 同目录）：[`references/details.md`](references/details.md) — 国际来源域名与 `site:` 组合、搜索示例、正文 `evaluate` 脚本、报告模板、质量清单、失败经验表。
+**详细参考**（按需读取，与本 `SKILL.md` 同目录）：[`references/details.md`](references/details.md) — 国际来源域名与 `site:` 组合、搜索示例、§1.6 信息时效、正文 `evaluate` 脚本、报告模板、质量清单、失败经验表。
 
 ## 路径与仓库约定（通用）
 
@@ -49,6 +49,7 @@ description: 从 solo-topics 获取话题，进行 Bing 搜索（国际来源优
 
 - 从话题 `keywords` 中选 **3～5** 个**英文**关键词；避免整句纯中文作为唯一检索式。
 - **国际优先**：用 **域名白名单 `site:... OR ...`** 与 **`-site:` 排除**（列表与示例见 `references/details.md` §1）；**慎用**笼统 `site:.com`。
+- **时效（最近 7 天内）**：以**检索日**为基准，正文主要依据宜为**往前 7 天内**发表或重大更新；检索式与筛 URL 的规则见 **`references/details.md` §1.6**。单靠搜索引擎无法保证结果都在窗口内，须在结果与页面上核对日期。
 - **多轮与翻页、并行与全文篇数**：见 `references/details.md` §1.5。
 
 ---
@@ -59,7 +60,7 @@ description: 从 solo-topics 获取话题，进行 Bing 搜索（国际来源优
 
 若无法调用该 skill：按 **bing-search 目录** 内 `SKILL.md` 操作；结果提取使用同目录 `scripts/extract-results.js`，勿自写易碎 DOM 解析。
 
-结果筛选（域名与优先级）见 **`references/details.md` §1**。
+结果筛选（域名与优先级）见 **`references/details.md` §1**；每条结果的 **`date` 字段**（若有）用于判断是否落入 **7 天**窗口；与详情页显示的**原文发布/更新日期**交叉核对，明显早于窗口且非必要背景则换 URL。
 
 ---
 
@@ -76,6 +77,8 @@ description: 从 solo-topics 获取话题，进行 Bing 搜索（国际来源优
 **完整 Markdown 模板、写作要点、国际来源比例**：见 **`references/details.md` §3**。
 
 摘要要求：中文、Mixlab 智库风格、1500～3000 字、观点带 `[标题](URL)`、区分检索日与原文日期、摘要级依据须标注。
+
+- **检索日**：填**执行 Bing 搜索当日**的 `YYYY-MM-DD`。为避免手误，可在终端执行 `date +%Y-%m-%d`（macOS/Linux）作为检索日填入模板；**检索日不会使搜索结果变新**，仅作诚实标注并与正文中的原文日期对照。
 
 ---
 

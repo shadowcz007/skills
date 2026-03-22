@@ -4,14 +4,16 @@
 
 ### 话题列表呈现示例
 
-向用户展示 `topics` 结果时可用：
+- **默认全量**：主 SKILL 步骤 1 已说明可对 `topics` 返回的**全部话题**各做一篇；列表可用于简报「将处理以下 N 个话题」，格式示例：
 
 ```
-可用话题：
+将制作专题报告的话题（共 N 个）：
 1. cmmsi2h1r0005me6xl3aqnuw9 - AI模型进展
 2. cmmshb0nt0001jp0as54syen5 - 一人公司的agentos
 ...
 ```
+
+- **用户明确要求选定专题时**：用同一格式展示 **id + label**，供确认范围后再执行。
 
 ---
 
@@ -29,6 +31,7 @@
 | 财经与综合 | Forbes, Bloomberg, Financial Times, Reuters, AP News, The New York Times, Wall Street Journal |
 | 研究与商业 | MIT Technology Review, Harvard Business Review, McKinsey Quarterly |
 | 开发者与社区 | dev.to, GitHub, Medium, Substack, Hacker News |
+| 时尚商业 | Business of Fashion, Vogue, WWD |
 
 ### 1.2 排除与降权（`-site:`）
 
@@ -51,6 +54,7 @@
 | 一人公司 / agent | `"AI agent" "solo founder" OR "one person company" this week 2026 -site:zhihu.com -site:csdn.net` |
 | AI 模型进展 | `Claude Gemini comparison benchmark breaking 2026 site:theverge.com OR site:arstechnica.com` |
 | 品牌 AI 案例 | `brand AI case study recent 2026 site:techcrunch.com OR site:wired.com` |
+| 奢侈品牌 AI 发布会 | `AI fashion luxury retail virtual try-on 2026 site:businessoffashion.com OR site:vogue.com`（奢侈品话题优先用时尚商业来源，TechCrunch/Wired 命中率低）|
 
 ### 1.5 多轮搜索与翻页
 
@@ -108,7 +112,8 @@
 | 优先级 | 来源 | 说明 |
 |--------|------|------|
 | 1 | TechCrunch, Wired, The Verge | 结构清晰，一般易抓正文 |
-| 2 | Medium, Substack, dev.to | 深度内容多；注意付费段落 |
+| 1.5 | Business of Fashion, Vogue | 时尚商业媒体；奢侈品话题优先用；注意 BoF 可能有付费墙 |
+| 2 | Medium, Substack, dev.to | 深度内容多；Medium 文章经常 404，优先用摘要备用 |
 | 3 | Forbes, Bloomberg, HBR | 注意跳转与裁剪 |
 | 4 | GitHub, Hacker News | 讨论与 issue，作补充 |
 | 避免 | CSDN、知乎、微信公众号等 | 难访问或需登录 |
@@ -116,6 +121,8 @@
 ### 2.4 无法访问与数量
 
 - 标注「来源暂时无法访问」或「仅摘要可用」；仅用摘要时文中写 **「仅据检索摘要，未读全文」**。
+- **Medium 文章经常 404 或被付费墙拦截**，遇到死链立即换 URL，勿长时间重试。
+- **仅有摘要时的快速出稿策略**：搜索摘要中已含标题+日期+核心信息，可配合其他可获取全文的来源（如 GitHub 报告）补充细节，用行业背景文章（Vogue 年度预测等）填补。
 - 勿卡在同一 URL；换其它国际来源。
 - 全文 **2～3** 篇即可，其余用摘要支撑。
 
@@ -205,3 +212,7 @@
 | 在某个来源卡住 | 付费墙/登录/超时即换 URL；摘要可写但要标注 |
 | 笼统 `site:.com` 漏结果 | 改用域名白名单或排除项 |
 | 报告像旧闻或无法判断新旧 | 用 §1.6：对照 T−7 天、看结果 `date` 与页面发布日期；检索日如实填写 |
+| 奢侈品 AI 话题搜索质量差 | 奢侈品牌 AI 内容在 TechCrunch/Wired 稀缺；改用 `site:businessoffashion.com OR site:vogue.com` 精准来源 |
+| Medium 文章大量 404 | Medium 付费墙/内容下架频繁；优先用检索摘要+标注，勿卡在死链 |
+| 话题文章同质化 | **写前必查**：先用 `solo-topics.js articles <TOPIC_ID>` 确认已有文章角度，避免重复 |
+| 多篇并行制作效率低 | 写完即投、并行投稿；成功后再清理临时文件；同话题新报告可引用旧报告增加深度 |

@@ -82,6 +82,36 @@ function sanitizeImageUrl(rawUrl) {
   return u;
 }
 
+function normalizeStrongInTextSegment(segment) {
+  return segment.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+}
+
+function normalizeStrongMarkdown(markdown) {
+  const lines = markdown.split('\n');
+  let inFence = false;
+  const out = [];
+
+  for (const line of lines) {
+    if (/^\s*```/.test(line)) {
+      inFence = !inFence;
+      out.push(line);
+      continue;
+    }
+    if (inFence || !line.includes('**')) {
+      out.push(line);
+      continue;
+    }
+
+    // Avoid touching inline code: only normalize segments outside `...`
+    const parts = line.split('`');
+    for (let i = 0; i < parts.length; i += 2) {
+      parts[i] = normalizeStrongInTextSegment(parts[i]);
+    }
+    out.push(parts.join('`'));
+  }
+  return out.join('\n');
+}
+
 async function toDataUrl(imageUrl, baseDir) {
   if (imageUrl.startsWith('data:')) {
     return imageUrl;
@@ -268,7 +298,8 @@ function buildDocument(markdown, title, options = {}) {
     gfm: true,
     breaks: false,
   });
-  const bodyHtml = applyWechatInlineStyles(marked.parse(markdown));
+  const normalizedMarkdown = normalizeStrongMarkdown(markdown);
+  const bodyHtml = applyWechatInlineStyles(marked.parse(normalizedMarkdown));
   const safeTitle = escapeHtmlText(title);
   const articleInlineStyle = 'font-size:15px;color:#4a4a4a;line-height:1.6;letter-spacing:0.1em;word-wrap:break-word;box-sizing:border-box;text-align:justify;max-width:680px;margin:0 auto;padding:24px 16px;';
 

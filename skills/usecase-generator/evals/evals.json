@@ -1,0 +1,23 @@
+{
+  "skill_name": "usecase-generator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我获取以下 URL 的正文并整理成 usecase：\n[1] Pedro Sant'Anna - Claude Code: My Workflow (Blog): https://psantanna.com/claude-code-my-workflow/\n[2] GitHub: pedrohcgs/claude-code-my-workflow: https://github.com/pedrohcgs/claude-code-my-workflow",
+      "expected_output": "两个独立的 markdown 文件，分别对应两个 URL，内容包含「一说」「适合谁」「为什么重要」「人物」「场景」「方法」「阅读难度」「可以带走什么」等完整板块",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "整理成用户案例：\n[1] Pedro Sant'Anna - Emory University Faculty: https://economics.emory.edu/people/faculty/biography/sant-anna-pedro.html\n[2] Pedro Sant'Anna - Google Scholar: https://scholar.google.com/citations?user=BVWmSY4AAAAJ&hl=en\n[3] Callaway & Sant'Anna (2021), Journal of Econometrics: https://doi.org/10.1016/j.jeconom.2020.12.001",
+      "expected_output": "三个独立的 markdown 文件，包含完整的 usecase 格式。第三个 URL（doi.org/ScienceDirect）预计会因验证码墙抓取失败，需要标注",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "我收集了一些资料，想整理成案例：\n[1] 一个关于用 AI 工具做学术研究的信息，博客是 psantanna.com，作者是 Emory 大学的副教授\n[2] GitHub 仓库 github.com/pedrohcgs/claude-code-my-workflow，有 700 多 stars\n\n不需要抓取，直接整理成 usecase 格式",
+      "expected_output": "两个 markdown 文件，但因为用户说不需要抓取，内容可能相对简略，重点是能基于已有信息推断出完整的 usecase 结构",
+      "files": []
+    }
+  ]
+}

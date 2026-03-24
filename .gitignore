@@ -20,3 +20,6 @@ npm-debug.log*
 .idea/
 .vscode/
 /.playwright-mcp
+/skills/.playwright-mcp
+/skills/usecase-generator/output
+/skills/article-translator/output

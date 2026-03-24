@@ -32,9 +32,12 @@ triggers:
 ### 1. 获取文章正文
 
 **优先使用 Playwright MCP**（已配置的情况下）：
-```
-使用 mcp__plugin_playwright_playwright__browser_navigate 导航到URL
-使用 mcp__plugin_playwright_playwright__browser_snapshot 获取页面内容
+```text
+1) 使用 mcp__plugin_playwright_playwright__browser_navigate 导航到 URL
+2) 等待页面首屏稳定后，停留并触发全文加载（处理动态渲染/分段加载）
+3) 持续向下滚动，直到页面底部，确保懒加载内容和图片全部出现
+4) 若图片或正文区域显示不完整，可缩小页面（zoom out）后继续滚动检查
+5) 确认“全文 + 全部图片已渲染”后，再使用 browser_snapshot 获取页面内容
 ```
 
 **备选方案**（无Playwright时）：
@@ -47,6 +50,7 @@ triggers:
 - 文章标题（title）
 - 正文内容（main content）
 - 图片列表（img src）
+- 图片 base64（优先从已渲染图片提取；无法提取时保留 URL 兜底）
 
 ### 3. 翻译正文
 
@@ -71,20 +75,31 @@ triggers:
 2. 重命名为有意义的名字（可用序号或基于alt text）
 3. 在Markdown中替换为本地相对路径：`![](images/xxx.jpg)`
 
-**图片下载方式**：
+**图片下载方式（按优先级）**：
+1. **Playwright MCP（首选）**
+   - 优先通过 Playwright MCP 在浏览器上下文中获取图片资源并保存到本地 `images/`。
+   - 优先下载/导出图片 base64（基于页面已渲染结果），再落盘为本地图片文件。
+   - 适用于有防盗链、需要携带页面会话/Referer 的图片链接。
+2. **Python 脚本（第一备选）**
+   - 使用仓库脚本下载：
 ```bash
-# 使用 curl 下载
-curl -L -o images/xxx.jpg "图片URL"
+python "skills/article-translator/scripts/download-image.py" "图片URL" "images" "xxx.jpg"
 ```
+3. **bash/curl（第二备选）**
+```bash
+curl -L -o "images/xxx.jpg" "图片URL"
+```
+
+**执行要求**：
+- 每张图片都遵循同一顺序：先尝试 Playwright MCP，失败后再回退到脚本，再回退到 bash。
+- 只有在“页面全文已加载 + 已滚动触发懒加载 + 图片完整显示”后，才开始提取正文与下载图片 base64。
+- 若最终下载失败，在正文中保留原图链接并添加失败说明注释。
 
 ### 5. 组装输出
 
 输出Markdown格式：
 ```markdown
 # 文章标题
-
-> 原文链接：URL  
-> 翻译日期：YYYY-MM-DD
 
 ## 导语
 
@@ -97,10 +112,13 @@ curl -L -o images/xxx.jpg "图片URL"
 ---
 
 ![图片描述](images/xxx.jpg)
+
+> 原文链接：URL  
+> 翻译日期：YYYY-MM-DD
 ```
 
 **元信息换行规范（必须）**：
-- 元信息区（原文链接/翻译日期）使用 blockquote，并强制硬换行。
+- 元信息区（原文链接/翻译日期）放在文末最后，使用 blockquote，并强制硬换行。
 - 推荐写法：每行末尾保留两个空格（`  `）。
 - 可选写法：每行末尾使用 `<br>`。
 - 禁止仅依赖自然换行，否则渲染后可能合并为同一段。
